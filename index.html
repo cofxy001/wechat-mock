@@ -5,27 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="微信模拟">
-<meta name="theme-color" content="#ededed">
-<title>微信模拟 · 全能版</title>
+<title>微信模拟 · 终极版</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html, body { height:100%; overflow:hidden; background:#000; display:flex; justify-content:center; align-items:center; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; }
+  html, body { height:100%; overflow:hidden; background:#ededed; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; }
   
+  /* 满屏宽度，去掉黑边 */
   .phone { 
     --bg:#ededed; --navbar:#ededed; --border:#dcdcdc; --chat-bg:#ededed; 
     --bubble-left:#fff; --bubble-right:#95ec69; --text:#000; --sub:#999; 
     --input-bg:#f7f7f7; --input:#fff; --panel-bg:#fff; --panel-text:#222; 
     --tabbar:#f7f7f7; --tab-active:#07c160; --tab-inactive:#333;
-    width:100%; max-width:430px; height:100%; max-height:100vh; 
+    width:100%; height:100%; 
     background:var(--bg); display:flex; flex-direction:column; 
     position:relative; overflow:hidden; color:var(--text); transition:background .25s; 
-  }
-  .phone.dark { 
-    --bg:#111; --navbar:#1c1c1c; --border:#333; --chat-bg:#111; 
-    --bubble-left:#2a2a2a; --bubble-right:#3a6b2a; --text:#e6e6e6; --sub:#777; 
-    --input-bg:#1c1c1c; --input:#2a2a2a; --panel-bg:#1c1c1c; --panel-text:#e6e6e6; 
-    --tabbar:#1c1c1c; --tab-inactive:#888;
   }
 
   .statusbar { height:44px; padding-top:env(safe-area-inset-top); display:flex; align-items:center; justify-content:space-between; padding-left:24px; padding-right:24px; font-size:14px; font-weight:600; flex-shrink:0; z-index:10; }
@@ -34,43 +27,33 @@
   .navbar .title { position:absolute; left:0; right:0; text-align:center; font-size:17px; font-weight:600; pointer-events:none; }
   .navbar .more { margin-left:auto; font-size:22px; cursor:pointer; padding:0 4px; }
 
-  /* 页面视图层 */
   .view { flex:1; display:none; flex-direction:column; overflow:hidden; background:var(--bg); }
   .view.active { display:flex; }
 
-  /* 聊天列表 */
-  .chat-list { flex:1; overflow-y:auto; }
-  .chat-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer; }
-  .chat-item .avatar { width:48px; height:48px; border-radius:6px; flex-shrink:0; }
-  .chat-item .info { flex:1; min-width:0; }
-  .chat-item .name { font-size:16px; font-weight:500; color:var(--text); margin-bottom:4px; }
-  .chat-item .last-msg { font-size:13px; color:var(--sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chat-list, .contacts-list { flex:1; overflow-y:auto; }
+  .chat-item, .contact-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .chat-item .avatar, .contact-item .avatar { width:48px; height:48px; border-radius:6px; flex-shrink:0; }
+  .chat-item .info, .contact-item .info { flex:1; min-width:0; }
+  .chat-item .name, .contact-item .name { font-size:16px; font-weight:500; color:var(--text); margin-bottom:4px; }
 
-  /* 通讯录 */
-  .contacts-list { flex:1; overflow-y:auto; }
-  .contact-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer; }
-  .contact-item .avatar { width:40px; height:40px; border-radius:6px; }
+  .red-dot { position:absolute; top:-2px; right:-6px; width:8px; height:8px; background:#e54d42; border-radius:50%; }
+  .tab-item { position:relative; }
 
-  /* 发现页 */
   .discover-list { flex:1; overflow-y:auto; background:var(--chat-bg); padding-bottom:20px; }
   .discover-group { background:var(--panel-bg); margin-bottom:10px; }
   .discover-item { display:flex; align-items:center; gap:16px; padding:16px; border-bottom:1px solid var(--border); cursor:pointer; }
   .discover-item:last-child { border-bottom:none; }
   .discover-icon { width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:20px; }
   .discover-text { flex:1; font-size:16px; color:var(--text); display:flex; align-items:center; gap:8px; }
-  .discover-sub { font-size:12px; color:var(--sub); margin-left:auto; margin-right:8px; }
   .discover-arrow { color:#ccc; font-size:16px; }
 
-  /* 底部导航栏 */
   .tabbar { display:flex; height:50px; padding-bottom:env(safe-area-inset-bottom); background:var(--tabbar); border-top:1px solid var(--border); flex-shrink:0; z-index:100; }
   .tab-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--tab-inactive); cursor:pointer; font-size:10px; gap:2px; }
   .tab-item.active { color:var(--tab-active); }
   .tab-icon { font-size:22px; line-height:1; }
-  .tab-icon.chat { font-size:24px; }
 
-  /* 聊天详情页 */
   .chat-view { flex:1; display:flex; flex-direction:column; background:var(--chat-bg); overflow:hidden; }
-  .chat { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px; display:flex; flex-direction:column; gap:16px; }
+  .chat { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:16px; }
   .msg { display:flex; gap:10px; align-items:flex-start; position:relative; }
   .msg.right { flex-direction:row-reverse; }
   .avatar { width:40px; height:40px; border-radius:6px; background:#c0c0c0; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; cursor:pointer; }
@@ -83,7 +66,10 @@
   .msg.right .bubble::after { right:-11px; left:auto; border-left-color:var(--bubble-right); border-right-color:transparent; }
   .time, .system { text-align:center; font-size:12px; color:var(--sub); margin:4px 0; align-self:center; width:100%; }
 
-  /* 聊天卡片 */
+  .voice-bubble { display:flex; align-items:center; gap:8px; min-width:60px; cursor:pointer; }
+  .voice-text { display:none; font-size:15px; background:rgba(0,0,0,0.05); padding:6px 10px; border-radius:6px; margin-top:4px; max-width:150px; line-height:1.4; }
+  .msg.right .voice-text { background:rgba(255,255,255,0.4); }
+  
   .card { display:flex; align-items:center; background:var(--bubble-left); border-radius:6px; padding:10px 14px; min-width:200px; gap:12px; cursor:pointer; }
   .msg.right .card { background:var(--bubble-right); }
   .card.redpacket { background:#fa9d3b; color:#fff; }
@@ -98,47 +84,49 @@
   .card.name-card { background:#fff; color:#000; flex-direction:column; align-items:flex-start; padding:14px; }
   .msg.right .card.name-card { background:#fff; }
   .name-card-top { display:flex; gap:10px; margin-bottom:10px; width:100%; border-bottom:1px solid #eee; padding-bottom:10px; }
-  .name-card-info .title { font-size:16px; font-weight:600; margin-bottom:2px; }
-  .name-card-info .sub { font-size:12px; color:#999; }
-  .name-card-bottom { font-size:12px; color:#999; }
   .bubble.sticker { background:transparent !important; padding:0; }
   .bubble.sticker::after { display:none; }
   .bubble.sticker .emoji { font-size:60px; line-height:1; }
 
-  /* 输入区 */
+  .msg-banner { position:absolute; top:44px; left:0; right:0; background:#f0f0f0; padding:10px 16px; font-size:14px; color:#333; text-align:center; transform:translateY(-100%); transition:transform 0.3s; z-index:500; border-bottom:1px solid #ccc; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
+  .msg-banner.show { transform:translateY(0); }
+
   .inputbar { background:var(--input-bg); border-top:1px solid var(--border); padding:8px 10px calc(8px + env(safe-area-inset-bottom)); display:flex; align-items:center; gap:6px; flex-shrink:0; }
   .inputbar input { flex:1; border:none; outline:none; background:var(--input); border-radius:6px; padding:10px 12px; font-size:16px; min-width:0; color:var(--text); }
   .inputbar button { background:#07c160; color:#fff; border:none; border-radius:6px; padding:10px 14px; font-size:15px; cursor:pointer; flex-shrink:0; }
   .icon-btn { background:var(--input); border:none; border-radius:6px; padding:9px 10px; font-size:17px; cursor:pointer; flex-shrink:0; color:var(--text); }
 
-  /* 个人主页 */
   .profile { flex:1; overflow-y:auto; background:var(--chat-bg); }
   .profile-header { display:flex; gap:16px; padding:24px 20px; background:var(--navbar); border-bottom:1px solid var(--border); }
   .profile-header .avatar { width:64px; height:64px; border-radius:8px; }
   .profile-header .info { flex:1; }
   .profile-header .name { font-size:20px; font-weight:600; margin-bottom:4px; }
   .profile-header .wxid { font-size:13px; color:var(--sub); }
-  .profile-btn-area { padding:20px; }
-  .profile-btn { background:#fff; border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center; font-size:16px; color:#07c160; cursor:pointer; }
 
-  /* 朋友圈 */
+  /* 朋友圈样式 */
   .moments { flex:1; overflow-y:auto; background:var(--chat-bg); }
-  .moment-cover { height:220px; background:linear-gradient(135deg,#667eea,#764ba2); position:relative; margin-bottom:36px; }
+  .moment-cover { height:280px; background:linear-gradient(135deg,#667eea,#764ba2); background-size:cover; background-position:center; position:relative; margin-bottom:36px; }
   .moment-cover .m-user { position:absolute; right:16px; bottom:-24px; display:flex; align-items:flex-end; gap:10px; }
-  .moment-cover .m-user .name { color:#fff; font-size:16px; font-weight:600; margin-bottom:32px; text-shadow:0 1px 3px rgba(0,0,0,.3); }
+  .moment-cover .m-user .name { color:#fff; font-size:16px; font-weight:600; margin-bottom:32px; text-shadow:0 1px 3px rgba(0,0,0,.5); }
   .moment-cover .m-user .avatar { width:64px; height:64px; border-radius:8px; border:2px solid #fff; }
-  .moment-item { display:flex; gap:10px; padding:16px; border-bottom:1px solid var(--border); }
-  .moment-item .avatar { width:44px; height:44px; }
-  .moment-content { flex:1; }
-  .moment-name { font-size:15px; font-weight:600; color:#4a90e2; margin-bottom:4px; }
-  .moment-text { font-size:15px; line-height:1.5; margin-bottom:8px; }
+  
+  .moment-item { display:flex; gap:10px; padding:16px; border-bottom:1px solid var(--border); background:var(--panel-bg); }
+  .moment-item .avatar { width:44px; height:44px; border-radius:6px; }
+  .moment-content { flex:1; min-width:0; }
+  .moment-name { font-size:15px; font-weight:600; color:#4a90e2; margin-bottom:4px; cursor:pointer; }
+  .moment-text { font-size:15px; line-height:1.5; margin-bottom:8px; word-break:break-word; }
   .moment-imgs { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin-bottom:8px; }
   .moment-imgs img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; }
-  .moment-footer { display:flex; align-items:center; font-size:12px; color:var(--sub); }
-  .moment-actions { margin-left:auto; display:flex; gap:8px; }
-  .moment-actions button { background:var(--input); border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer; }
+  .moment-footer { display:flex; align-items:center; font-size:12px; color:var(--sub); margin-top:6px; }
+  
+  .moment-likes-comments { background:rgba(0,0,0,0.03); border-radius:6px; padding:8px; margin-top:8px; font-size:13px; }
+  .moment-likes { color:#4a90e2; font-weight:500; margin-bottom:4px; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:4px; cursor:pointer; }
+  .moment-comment { line-height:1.5; margin-top:4px; color:var(--text); cursor:pointer; }
+  .moment-comment .c-name { color:#4a90e2; font-weight:500; }
+  
+  .moment-actions { margin-left:auto; display:flex; gap:12px; }
+  .moment-actions button { background:transparent; border:none; color:#4a90e2; font-size:13px; cursor:pointer; padding:4px; }
 
-  /* 抽屉与弹窗等 */
   .popup { position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:500; display:none; align-items:center; justify-content:center; }
   .popup.show { display:flex; }
   .rp-box { width:300px; background:#fa9d3b; border-radius:12px; overflow:hidden; text-align:center; color:#fff; position:relative; }
@@ -147,9 +135,8 @@
   .rp-sender { display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px; }
   .rp-sender .avatar { width:48px; height:48px; }
   .rp-sender .name { font-size:14px; }
-  .rp-msg { font-size:18px; font-weight:600; margin-bottom:20px; }
   .rp-open-btn { background:#f5dab8; color:#333; border:none; border-radius:6px; padding:10px 40px; font-size:16px; font-weight:600; cursor:pointer; margin-bottom:20px; }
-  
+
   .drawer-mask { position:absolute; inset:0; background:rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .25s; z-index:900; }
   .drawer-mask.open { opacity:1; pointer-events:auto; }
   .drawer { position:absolute; top:0; right:0; bottom:0; width:min(88vw, 360px); background:var(--panel-bg); color:var(--panel-text); transform:translateX(100%); transition:transform .28s; z-index:1000; display:flex; flex-direction:column; }
@@ -162,46 +149,31 @@
   .row input { border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:14px; flex:1; min-width:80px; background:var(--input); color:var(--text); }
   .row button { background:#07c160; color:#fff; border:none; border-radius:6px; padding:9px 14px; font-size:14px; cursor:pointer; }
   .row button.gray { background:#888; }
-
-  .msg-menu { position:fixed; z-index:2000; background:var(--panel-bg); border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.25); padding:6px; display:flex; gap:4px; transform:scale(.9); opacity:0; pointer-events:none; transition:all .15s; }
-  .msg-menu.show { transform:scale(1); opacity:1; pointer-events:auto; }
-  .msg-menu button { background:transparent; border:none; padding:8px 12px; font-size:14px; cursor:pointer; border-radius:6px; color:var(--panel-text); }
-  .msg-menu button.danger { color:#e54d42; }
-
-  .video-call { position:absolute; inset:0; z-index:800; background:#000; display:none; flex-direction:column; color:#fff; }
-  .video-call.show { display:flex; }
-  .remote-video { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#1a1a1a; }
-  .remote-avatar { width:120px; height:120px; border-radius:16px; background:#333; display:flex; align-items:center; justify-content:center; font-size:40px; }
-  .local-video { position:absolute; top:60px; right:16px; width:100px; height:140px; border-radius:8px; background:#222; border:1px solid #444; display:flex; align-items:center; justify-content:center; font-size:12px; }
-  .video-actions { position:absolute; bottom:50px; left:0; right:0; display:flex; justify-content:center; gap:60px; }
-  .video-actions button { width:66px; height:66px; border-radius:50%; border:none; color:#fff; font-size:13px; cursor:pointer; }
-  .v-accept { background:#07c160; }
-  .v-hangup { background:#e54d42; }
 </style>
 </head>
 <body>
 
-<div class="phone" id="phone">
-  <div class="statusbar"><span>15:23</span><span>📶 🔋</span></div>
+<!-- 【核心】图片选择器，点击选图后会调用手机相册 -->
+<input type="file" id="globalImageUploader" accept="image/*" style="display:none">
 
-  <!-- 顶部导航 -->
+<div class="phone" id="phone">
+  <div class="statusbar"><span>15:35</span><span>📶 🔋</span></div>
+  <div class="msg-banner" id="msgBanner" onclick="enterChatFromBanner()"></div>
+
   <div class="navbar">
     <span class="back" id="navBack" onclick="handleBack()" style="display:none;">‹</span>
     <span class="title" id="navTitle">微信</span>
     <span class="more" onclick="openDrawer()" id="navMore">···</span>
   </div>
 
-  <!-- 主视图：微信(聊天列表) -->
   <div class="view active" id="view-chatlist">
     <div class="chat-list" id="chatListContainer"></div>
   </div>
 
-  <!-- 主视图：通讯录 -->
   <div class="view" id="view-contacts">
     <div class="contacts-list" id="contactListContainer"></div>
   </div>
 
-  <!-- 主视图：发现 -->
   <div class="view" id="view-discover">
     <div class="discover-list">
       <div class="discover-group" style="margin-top:10px;">
@@ -211,98 +183,26 @@
           <div class="discover-arrow">›</div>
         </div>
       </div>
-      <div class="discover-group">
-        <div class="discover-item">
-          <div class="discover-icon" style="color:#f5a623;">♾️</div>
-          <div class="discover-text">视频号</div>
-          <div class="discover-arrow">›</div>
-        </div>
-        <div class="discover-item">
-          <div class="discover-icon" style="color:#e54d42;">🔴</div>
-          <div class="discover-text">
-            直播 
-            <span class="discover-sub">今年扩招，往届生人数多，难度下降</span>
-            <span style="color:#e54d42;font-size:10px;margin-left:4px;">●</span>
-          </div>
-          <div class="discover-arrow">›</div>
-        </div>
-      </div>
-      <div class="discover-group">
-        <div class="discover-item">
-          <div class="discover-icon" style="color:#4a90e2;">📠</div>
-          <div class="discover-text">扫一扫</div>
-          <div class="discover-arrow">›</div>
-        </div>
-        <div class="discover-item">
-          <div class="discover-icon" style="color:#e54d42;">🎵</div>
-          <div class="discover-text">听一听</div>
-          <div class="discover-arrow">›</div>
-        </div>
-      </div>
-      <div class="discover-group">
-        <div class="discover-item">
-          <div class="discover-icon" style="color:#f5a623;">🔮</div>
-          <div class="discover-text">看一看</div>
-          <div class="discover-arrow">›</div>
-        </div>
-        <div class="discover-item">
-          <div class="discover-icon" style="color:#e54d42;">🔍</div>
-          <div class="discover-text">搜一搜</div>
-          <div class="discover-arrow">›</div>
-        </div>
-      </div>
-      <div class="discover-group">
-        <div class="discover-item">
-          <div class="discover-icon" style="color:#4a90e2;">👥</div>
-          <div class="discover-text">附近的人</div>
-          <div class="discover-arrow">›</div>
-        </div>
-      </div>
-      <div class="discover-group">
-        <div class="discover-item">
-          <div class="discover-icon" style="color:#07c160;">🎮</div>
-          <div class="discover-text">游戏</div>
-          <div class="discover-arrow">›</div>
-        </div>
-      </div>
-      <div class="discover-group">
-        <div class="discover-item">
-          <div class="discover-icon" style="color:#5a5abf;">🔗</div>
-          <div class="discover-text">小程序</div>
-          <div class="discover-arrow">›</div>
-        </div>
-      </div>
     </div>
   </div>
 
-  <!-- 主视图：我 -->
   <div class="view" id="view-me">
     <div class="profile" style="background:var(--chat-bg);">
-      <div class="profile-header" style="padding:40px 20px;">
-        <div class="avatar" style="background:#4a90e2;width:64px;height:64px;">${meName.slice(0,2)}</div>
+      <div class="profile-header" style="padding:40px 20px;" onclick="changeMyAvatar()">
+        <div class="avatar" id="myMeAvatar" style="background:#4a90e2;width:64px;height:64px;">我</div>
         <div class="info" style="display:flex;flex-direction:column;justify-content:center;">
-          <div class="name" style="font-size:22px;">${meName}</div>
-          <div class="wxid" style="margin-top:6px;">微信号：wxid_myself</div>
+          <div class="name" style="font-size:22px;" id="myDisplayName">我</div>
+          <div class="wxid" style="margin-top:6px;">微信号: wxid_myself</div>
         </div>
-      </div>
-      <div class="discover-group" style="margin-top:10px;">
-        <div class="discover-item"><div class="discover-icon">⭐</div><div class="discover-text">收藏</div><div class="discover-arrow">›</div></div>
-        <div class="discover-item"><div class="discover-icon">🖼️</div><div class="discover-text">朋友圈</div><div class="discover-arrow">›</div></div>
-        <div class="discover-item"><div class="discover-icon">💳</div><div class="discover-text">卡包</div><div class="discover-arrow">›</div></div>
-        <div class="discover-item"><div class="discover-icon">😊</div><div class="discover-text">表情</div><div class="discover-arrow">›</div></div>
-      </div>
-      <div class="discover-group">
-        <div class="discover-item" onclick="openDrawer()"><div class="discover-icon">⚙️</div><div class="discover-text">设置 (点击呼出面板)</div><div class="discover-arrow">›</div></div>
       </div>
     </div>
   </div>
 
-  <!-- 聊天详情页 -->
   <div class="view" id="view-chat">
     <div class="chat-view">
       <div class="chat" id="chatBox"></div>
       <div class="inputbar">
-        <button class="icon-btn" onclick="addVoice()">🎤</button>
+        <button class="icon-btn" onclick="promptVoice()">🎤</button>
         <button class="icon-btn" onclick="addQuickSticker()">😊</button>
         <input id="msgInput" placeholder="输入消息..." onkeydown="if(event.key==='Enter')sendMessage()" />
         <button onclick="sendMessage()">发送</button>
@@ -310,80 +210,45 @@
     </div>
   </div>
 
-  <!-- 个人主页 -->
   <div class="view" id="view-profile">
     <div class="profile">
       <div class="profile-header">
-        <div class="avatar" id="profAvatar"></div>
+        <div class="avatar" id="profAvatar" onclick="changeContactAvatar()"></div>
         <div class="info">
           <div class="name" id="profName">昵称</div>
           <div class="wxid">微信号: wxid_123456</div>
         </div>
       </div>
-      <div class="profile-btn-area">
-        <div class="profile-btn" onclick="sendMessageFromProfile()">发消息</div>
-      </div>
     </div>
   </div>
 
-  <!-- 朋友圈详情页 -->
   <div class="view" id="view-moments">
     <div class="moments">
-      <div class="moment-cover">
-        <div class="m-user">
-          <span class="name">我</span>
-          <div class="avatar" style="background:#4a90e2;">我</div>
+      <div class="moment-cover" id="momentCover" onclick="changeMomentCover()">
+        <div class="m-user" onclick="event.stopPropagation(); changeMomentSelfName()">
+          <span class="name" id="momentSelfName">我</span>
+          <div class="avatar" id="myMomentAvatar" style="background:#4a90e2;" onclick="event.stopPropagation(); changeMyAvatar()">我</div>
         </div>
       </div>
       <div id="momentListContainer"></div>
     </div>
   </div>
 
-  <!-- 底部导航栏 -->
   <div class="tabbar" id="mainTabbar">
-    <div class="tab-item active" onclick="switchTab('chatlist')" id="tab-chatlist">
-      <div class="tab-icon chat">💬</div>
-      <span>微信</span>
-    </div>
-    <div class="tab-item" onclick="switchTab('contacts')" id="tab-contacts">
-      <div class="tab-icon">👤</div>
-      <span>通讯录</span>
-    </div>
-    <div class="tab-item" onclick="switchTab('discover')" id="tab-discover">
-      <div class="tab-icon" style="color:inherit;">🧭</div>
-      <span>发现</span>
-    </div>
-    <div class="tab-item" onclick="switchTab('me')" id="tab-me">
-      <div class="tab-icon">👤</div>
-      <span>我</span>
-    </div>
+    <div class="tab-item active" onclick="switchTab('chatlist')" id="tab-chatlist"><div class="tab-icon chat">💬</div><span>微信</span><div class="red-dot" id="dot-chat"></div></div>
+    <div class="tab-item" onclick="switchTab('contacts')" id="tab-contacts"><div class="tab-icon">👤</div><span>通讯录</span></div>
+    <div class="tab-item" onclick="switchTab('discover')" id="tab-discover"><div class="tab-icon">🧭</div><span>发现</span></div>
+    <div class="tab-item" onclick="switchTab('me')" id="tab-me"><div class="tab-icon">👤</div><span>我</span></div>
   </div>
-
-  <!-- 悬浮按钮 / 红包弹窗 / 视频通话 -->
-  <button id="fab" onclick="openDrawer()" style="position:absolute; right:14px; bottom:calc(70px + env(safe-area-inset-bottom)); width:52px; height:52px; border-radius:50%; background:#07c160; color:#fff; border:none; font-size:22px; box-shadow:0 6px 18px rgba(7,193,96,.4); z-index:50; cursor:pointer; display:none;">⚙️</button>
 
   <div class="popup" id="rpPopup" onclick="closePopup()">
     <div class="rp-box" onclick="event.stopPropagation()">
       <div class="close" onclick="closePopup()">✕</div>
       <div class="rp-header">
-        <div class="rp-sender">
-          <div class="avatar" id="rpSenderAvatar"></div>
-          <div class="name" id="rpSenderName">对方</div>
-        </div>
+        <div class="rp-sender"><div class="avatar" id="rpSenderAvatar"></div><div class="name" id="rpSenderName">对方</div></div>
         <div class="rp-msg">恭喜发财，大吉大利</div>
-        <button class="rp-open-btn" id="rpOpenBtn" onclick="openRedpacketAction()">開</button>
+        <button class="rp-open-btn" onclick="openRedpacketAction()">開</button>
       </div>
-    </div>
-  </div>
-
-  <div class="video-call" id="videoCall">
-    <div class="remote-video"><div class="remote-avatar" id="vcAvatar">对方</div></div>
-    <div class="local-video">📷 我的画面</div>
-    <div style="position:absolute; top:60px; left:16px; font-size:20px; font-weight:600;" id="vcName">对方</div>
-    <div style="position:absolute; top:90px; left:16px; font-size:14px;" id="vcStatus">正在呼叫...</div>
-    <div class="video-actions">
-      <button class="v-accept" id="vcAccept" onclick="acceptVideo()">接听</button>
-      <button class="v-hangup" id="vcHangup" onclick="hangupVideo()">挂断</button>
     </div>
   </div>
 
@@ -391,119 +256,293 @@
   <div class="drawer" id="drawer">
     <div class="drawer-head"><span>控制面板</span><button onclick="closeDrawer()" style="background:none;border:none;font-size:20px;">✕</button></div>
     <div class="drawer-body">
-      <h3>① 当前聊天设置</h3>
+      <h3>① 朋友圈专属设置</h3>
+      <div class="row">
+        <button onclick="addNewMoment()">📝 发朋友圈(图文)</button>
+      </div>
+      <div class="row">
+        <button class="gray" onclick="changeMomentCover()">🖼️ 换朋友圈背景图</button>
+      </div>
+
+      <h3>② 聊天身份设置</h3>
       <div class="row"><span>对方昵称</span><input type="text" id="inputPeerName" value="" /></div>
-      <div class="row"><button onclick="updatePeerName()">修改昵称</button></div>
+      <div class="row">
+        <button onclick="updatePeerName()">改对方名</button>
+        <button class="gray" onclick="changeContactAvatar()">换对方头像</button>
+      </div>
       
-      <h3>② 插入特殊消息 (需在聊天内)</h3>
+      <h3>③ 插入特殊消息</h3>
       <div class="row">
         <button onclick="addTimeCard()">🕒 时间</button>
         <button onclick="addSystemCard()">⚙️ 提示</button>
+        <button onclick="promptVoice()">🎤 自定义语音</button>
       </div>
       <div class="row">
         <button onclick="addCustomTransfer()">💰 转账</button>
         <button onclick="addRedpacket()">🧧 红包</button>
       </div>
       <div class="row">
-        <button onclick="addVoice()">🎤 语音</button>
-        <button onclick="addImage()">🖼️ 图片</button>
-      </div>
-      <div class="row">
         <button onclick="addNameCard()">📇 名片</button>
         <button onclick="addSticker()">😄 表情</button>
       </div>
 
-      <h3>③ 模拟通话</h3>
+      <h3>④ 呼叫与提示</h3>
       <div class="row">
-        <button onclick="simulateCall('voice')">📞 语音</button>
-        <button onclick="simulateCall('video')">📹 视频</button>
+        <button onclick="simulateCall('voice')">📞 语音通话</button>
+        <button onclick="simulateCall('video')">📹 视频通话</button>
       </div>
-
-      <h3>④ 导出与清空</h3>
       <div class="row">
-        <button onclick="exportPNG()">📷 截图</button>
-        <button class="gray" onclick="clearChat()">清空</button>
+        <button class="gray" style="background:#4a90e2;" onclick="triggerMockMsg()">🔔 模拟弹出新消息</button>
       </div>
     </div>
   </div>
-</div>
-
-<div class="msg-menu" id="msgMenu">
-  <button onclick="menuAction('copy')">复制</button>
-  <button class="danger" onclick="menuAction('delete')">删除</button>
 </div>
 
 <script>
 /* ================= 核心数据 ================= */
 let meName = '我';
 let meAvatar = null;
+let momentCoverUrl = null;
 
 let contactsDB = [
-  {
-    id: 'c1', name: 'a.妈妈', avatar: null, 
-    msgs: [
-      { id: 'm1', type: 'time', content: '11月11日 19:15' },
-      { id: 'm2', type: 'call', isMe: false, callType: 'video', duration: '03:02' },
-      { id: 'm3', type: 'time', content: '11月14日 12:10' },
-      { id: 'm4', type: 'text', isMe: false, content: '今天是不是星期天' }
-    ]
-  },
-  {
-    id: 'c2', name: '微信团队', avatar: null,
-    msgs: [{ id: 't1', type: 'text', isMe: false, content: '欢迎使用微信团队助手' }]
-  },
-  {
-    id: 'c3', name: '张三', avatar: null,
-    msgs: [{ id: 't2', type: 'text', isMe: false, content: '晚上出来吃饭吗？' }]
-  }
+  { id: 'c1', name: 'a.妈妈', avatar: null, msgs: [] },
+  { id: 'c2', name: '微信团队', avatar: null, msgs: [{ id: 't1', type: 'text', isMe: false, content: '欢迎使用微信模拟' }] }
 ];
 
-// 朋友圈数据
 let momentsDB = [
-  {
+  { 
     id: 'mom1', name: '张三', text: '今天天气真好，出去走走～', 
-    images: ['https://picsum.photos/seed/m1/200/200', 'https://picsum.photos/seed/m2/200/200'],
-    time: '2小时前', likes: ['李四'], comments: []
-  },
-  {
-    id: 'mom2', name: '李四', text: '刚看完一部电影，推荐！', 
-    images: [], time: '5小时前', likes: [], comments: []
+    images: ['https://picsum.photos/seed/m1/200/200'], 
+    time: '2小时前', likes: ['李四', '王五'], comments: [{name:'赵六', text:'确实不错', replyTo:null}] 
   }
 ];
 
 let currentContact = null;
 let msgIdCounter = 100;
-let currentTab = 'chatlist';
+let bannerTargetContact = null;
 
-/* ================= 页面路由与底部导航 ================= */
+/* ================= 相册选图核心逻辑 ================= */
+let uploadTarget = 'me'; 
+let contactToChange = null;
+let targetMomentId = null;
+
+function triggerUpload(target, contact = null, momId = null) {
+  uploadTarget = target;
+  contactToChange = contact;
+  targetMomentId = momId;
+  // 点击触发原生文件选择器
+  document.getElementById('globalImageUploader').click();
+}
+
+document.getElementById('globalImageUploader').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const base64Img = event.target.result;
+    
+    if (uploadTarget === 'me') {
+      meAvatar = base64Img;
+      renderMyProfile();
+      if (document.getElementById('view-chat').classList.contains('active')) renderMessages();
+      if (document.getElementById('view-moments').classList.contains('active')) renderMoments();
+    } 
+    else if (uploadTarget === 'contact' && contactToChange) {
+      contactToChange.avatar = base64Img;
+      renderContacts(); renderChatList();
+      if (currentContact === contactToChange) {
+        renderMessages();
+        if (document.getElementById('view-profile').classList.contains('active')) openProfile();
+      }
+    }
+    else if (uploadTarget === 'momentCover') {
+      momentCoverUrl = base64Img;
+      document.getElementById('momentCover').style.backgroundImage = `url(${base64Img})`;
+    }
+    else if (uploadTarget === 'momentImg' && targetMomentId) {
+      const m = momentsDB.find(x => x.id === targetMomentId);
+      if(m) {
+        m.images.push(base64Img);
+        renderMoments();
+      }
+    }
+  };
+  reader.readAsDataURL(file);
+  e.target.value = ''; 
+});
+
+// 各个换图按钮触发
+function changeMyAvatar() { triggerUpload('me'); }
+function changeContactAvatar() { if(currentContact) triggerUpload('contact', currentContact); }
+function changeMomentCover() { triggerUpload('momentCover'); }
+
+
+/* ================= 朋友圈互动 ================= */
+function changeMomentSelfName() {
+  const newName = prompt('修改朋友圈显示的你的昵称', meName);
+  if(newName) {
+    meName = newName;
+    document.getElementById('myDisplayName').textContent = meName;
+    document.getElementById('momentSelfName').textContent = meName;
+    document.getElementById('myMeAvatar').textContent = meName.slice(0,2);
+  }
+}
+
+function addNewMoment() {
+  closeDrawer();
+  const text = prompt('输入朋友圈文字内容：', '这是美好的一天！');
+  if(text === null) return;
+  const newM = {
+    id: 'mom' + Date.now(), name: meName, text: text, images: [], time: '刚刚', likes: [], comments: []
+  };
+  momentsDB.unshift(newM);
+  renderMoments();
+  setTimeout(() => {
+    if(confirm('要顺便从你的相册添加一张图片吗？')) triggerUpload('momentImg', null, newM.id);
+  }, 100);
+}
+
+function addCustomLike(id) {
+  const m = momentsDB.find(x => x.id === id);
+  if(!m) return;
+  const customName = prompt('输入点赞人的昵称 (留空则不点赞):', meName);
+  if(customName !== null && customName.trim() !== '') {
+    m.likes.push(customName.trim());
+    renderMoments();
+  }
+}
+
+function removeLike(id, index) {
+  const m = momentsDB.find(x => x.id === id);
+  if(!m) return;
+  if(confirm(`要删除【${m.likes[index]}】的点赞吗？`)) {
+    m.likes.splice(index, 1);
+    renderMoments();
+  }
+}
+
+function addComment(id, replyToName, isEditMode = false, commentIndex = -1) {
+  const m = momentsDB.find(x => x.id === id);
+  if(!m) return;
+
+  if(isEditMode) {
+    if(confirm('要删除这条评论吗？')) {
+      m.comments.splice(commentIndex, 1);
+      renderMoments();
+    }
+    return;
+  }
+
+  const hint = replyToName ? `回复 ${replyToName} (输入 昵称:内容):` : '发表评论 (输入 昵称:内容):';
+  const input = prompt(hint, `张三:你好`);
+  if(!input) return;
+  
+  let cName = meName;
+  let cText = input;
+  if(input.includes(':')) {
+    const parts = input.split(':');
+    cName = parts[0].trim();
+    cText = parts.slice(1).join(':').trim();
+  }
+
+  m.comments.push({ name: cName, text: cText, replyTo: replyToName || null });
+  renderMoments();
+}
+
+function editMomentContent(id) {
+  const m = momentsDB.find(x => x.id === id);
+  if(!m) return;
+  const act = prompt('输入 1 修改文字，输入 2 追加相册图片', '1');
+  if(act === '1') {
+    const newTxt = prompt('修改文字内容', m.text);
+    if(newTxt !== null) { m.text = newTxt; renderMoments(); }
+  } else if(act === '2') {
+    triggerUpload('momentImg', null, id);
+  }
+}
+
+function deleteMoment(id) {
+  if(!confirm('确定删除这条动态？')) return;
+  momentsDB = momentsDB.filter(x => x.id !== id);
+  renderMoments();
+}
+
+function renderMoments() {
+  const container = document.getElementById('momentListContainer');
+  container.innerHTML = '';
+  
+  document.getElementById('momentSelfName').textContent = meName;
+  const mava = document.getElementById('myMomentAvatar');
+  if(meAvatar) { mava.innerHTML = `<img src="${meAvatar}">`; mava.style.background = 'transparent'; }
+  else { mava.textContent = meName.slice(0,2); mava.style.background = '#4a90e2'; }
+  if(momentCoverUrl) document.getElementById('momentCover').style.backgroundImage = `url(${momentCoverUrl})`;
+
+  momentsDB.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'moment-item';
+    
+    const imgsHtml = m.images.length > 0 ? `<div class="moment-imgs">${m.images.map(src=>`<img src="${src}">`).join('')}</div>` : '';
+    
+    let likeHtml = '';
+    if(m.likes.length > 0) {
+      const likeSpans = m.likes.map((n, i) => `<span onclick="event.stopPropagation(); removeLike('${m.id}', ${i})">${n}</span>`).join('，');
+      likeHtml = `<div class="moment-likes">❤️ ${likeSpans}</div>`;
+    }
+
+    let commentHtml = '';
+    if(m.comments.length > 0) {
+      commentHtml = m.comments.map((c, i) => `
+        <div class="moment-comment" onclick="event.stopPropagation(); addComment('${m.id}', '${c.name}', true, ${i})">
+          <span class="c-name">${c.name}</span>${c.replyTo ? ` 回复 <span class="c-name">${c.replyTo}</span>` : ''}：${c.text}
+        </div>
+      `).join('');
+    }
+
+    const interactionHtml = (m.likes.length > 0 || m.comments.length > 0) ? `
+      <div class="moment-likes-comments">
+        ${likeHtml}${commentHtml}
+      </div>
+    ` : '';
+
+    el.innerHTML = `
+      <div class="avatar" style="background:#4a90e2">${m.name.slice(0,2)}</div>
+      <div class="moment-content">
+        <div class="moment-name" ondblclick="editMomentContent('${m.id}')">${m.name}</div>
+        <div class="moment-text">${m.text}</div>
+        ${imgsHtml}
+        <div class="moment-footer">
+          <span>${m.time}</span>
+          <div class="moment-actions">
+            <button onclick="addCustomLike('${m.id}')">🤍 赞</button>
+            <button onclick="addComment('${m.id}', null)">💬 评论</button>
+            <button onclick="deleteMoment('${m.id}')" style="color:#e54d42;">删除</button>
+          </div>
+        </div>
+        ${interactionHtml}
+      </div>
+    `;
+    container.appendChild(el);
+  });
+}
+
+/* ================= 导航与聊天辅助 ================= */
 function switchTab(tabId) {
-  currentTab = tabId;
-  // 隐藏所有主视图和子视图
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.getElementById('navBack').style.display = 'none';
   document.getElementById('mainTabbar').style.display = 'flex';
   document.getElementById('navMore').style.display = 'block';
-  document.getElementById('fab').style.display = 'none';
 
-  // 重置底部图标状态
   document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + tabId).classList.add('active');
 
   if (tabId === 'chatlist') {
-    renderChatList();
-    document.getElementById('view-chatlist').classList.add('active');
-    document.getElementById('navTitle').textContent = '微信';
+    renderChatList(); document.getElementById('view-chatlist').classList.add('active'); document.getElementById('navTitle').textContent = '微信';
   } else if (tabId === 'contacts') {
-    renderContacts();
-    document.getElementById('view-contacts').classList.add('active');
-    document.getElementById('navTitle').textContent = '通讯录';
+    renderContacts(); document.getElementById('view-contacts').classList.add('active'); document.getElementById('navTitle').textContent = '通讯录';
   } else if (tabId === 'discover') {
-    document.getElementById('view-discover').classList.add('active');
-    document.getElementById('navTitle').textContent = '发现';
+    document.getElementById('view-discover').classList.add('active'); document.getElementById('navTitle').textContent = '发现';
   } else if (tabId === 'me') {
-    document.getElementById('view-me').classList.add('active');
-    document.getElementById('navTitle').textContent = '我';
-    document.getElementById('navMore').style.display = 'none';
+    renderMyProfile(); document.getElementById('view-me').classList.add('active'); document.getElementById('navTitle').textContent = '我'; document.getElementById('navMore').style.display = 'none';
   }
 }
 
@@ -517,52 +556,30 @@ function openMoments() {
 }
 
 function handleBack() {
-  if (document.getElementById('view-chat').classList.contains('active') || 
-      document.getElementById('view-profile').classList.contains('active')) {
-    switchTab('chatlist');
-  } else if (document.getElementById('view-moments').classList.contains('active')) {
-    switchTab('discover');
-  }
+  if (document.getElementById('view-moments').classList.contains('active')) switchTab('discover');
+  else switchTab('chatlist');
 }
 
 function enterChat(contact) {
   currentContact = contact;
   document.getElementById('inputPeerName').value = contact.name;
-  
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.getElementById('view-chat').classList.add('active');
   document.getElementById('mainTabbar').style.display = 'none';
   document.getElementById('navBack').style.display = 'block';
   document.getElementById('navTitle').textContent = contact.name;
-  document.getElementById('fab').style.display = 'none';
-
   renderMessages();
 }
 
-/* ================= 渲染：列表、通讯录、朋友圈 ================= */
 function renderChatList() {
   const container = document.getElementById('chatListContainer');
   container.innerHTML = '';
   contactsDB.forEach(c => {
-    const lastMsg = c.msgs.length > 0 ? c.msgs[c.msgs.length - 1] : null;
-    let lastTxt = '';
-    if(lastMsg) {
-      if(lastMsg.type === 'text') lastTxt = lastMsg.content;
-      else if(lastMsg.type === 'call') lastTxt = `[通话] 时长 ${lastMsg.duration}`;
-      else if(lastMsg.type === 'image') lastTxt = '[图片]';
-      else if(lastMsg.type === 'transfer') lastTxt = '[转账]';
-      else if(lastMsg.type === 'redpacket') lastTxt = '[微信红包]';
-      else if(lastMsg.type === 'namecard') lastTxt = '[个人名片]';
-      else if(lastMsg.type === 'sticker') lastTxt = '[动画表情]';
-    }
     const el = document.createElement('div');
     el.className = 'chat-item';
     el.innerHTML = `
       <div class="avatar" style="background:#4a90e2">${c.avatar ? `<img src="${c.avatar}">` : c.name.slice(0,2)}</div>
-      <div class="info">
-        <div class="name">${c.name}</div>
-        <div class="last-msg">${lastTxt}</div>
-      </div>
+      <div class="info"><div class="name">${c.name}</div></div>
     `;
     el.onclick = () => enterChat(c);
     container.appendChild(el);
@@ -584,260 +601,121 @@ function renderContacts() {
   });
 }
 
-function renderMoments() {
-  const container = document.getElementById('momentListContainer');
-  container.innerHTML = '';
-  momentsDB.forEach(m => {
-    const el = document.createElement('div');
-    el.className = 'moment-item';
-    const imgsHtml = m.images.length > 0 ? `<div class="moment-imgs">${m.images.map(src=>`<img src="${src}">`).join('')}</div>` : '';
-    const likesHtml = m.likes.length > 0 ? `<div style="font-size:13px;color:#4a90e2;margin-top:6px;">❤️ ${m.likes.join('、')}</div>` : '';
-    
-    el.innerHTML = `
-      <div class="avatar" style="background:#4a90e2">${m.name.slice(0,2)}</div>
-      <div class="moment-content">
-        <div class="moment-name">${m.name}</div>
-        <div class="moment-text">${m.text}</div>
-        ${imgsHtml}
-        <div class="moment-footer">
-          <span>${m.time}</span>
-          <div class="moment-actions">
-            <button onclick="likeMoment('${m.id}')">🤍 赞</button>
-            <button>💬 评论</button>
-          </div>
-        </div>
-        ${likesHtml}
-      </div>
-    `;
-    container.appendChild(el);
-  });
+function renderMyProfile() {
+  const ava = document.getElementById('myMeAvatar');
+  if(meAvatar) { ava.innerHTML = `<img src="${meAvatar}">`; ava.style.background = 'transparent'; }
+  else { ava.textContent = meName.slice(0,2); ava.style.background = '#4a90e2'; }
 }
 
-function likeMoment(id) {
-  const m = momentsDB.find(x => x.id === id);
-  if(m && !m.likes.includes(meName)) {
-    m.likes.push(meName);
-    renderMoments();
-  }
-}
-
-/* ================= 渲染聊天内容 ================= */
 function renderMessages() {
   const chatBox = document.getElementById('chatBox');
   chatBox.innerHTML = '';
+  if(!currentContact) return;
   currentContact.msgs.forEach(msg => {
     if (msg.type === 'time' || msg.type === 'system') {
-      const d = document.createElement('div');
-      d.className = msg.type;
-      d.textContent = msg.content;
-      chatBox.appendChild(d);
-      return;
+      const d = document.createElement('div'); d.className = msg.type; d.textContent = msg.content; chatBox.appendChild(d); return;
     }
-
     const el = document.createElement('div');
     el.className = 'msg ' + (msg.isMe ? 'right' : 'left');
     const name = msg.isMe ? meName : currentContact.name;
     const avaUrl = msg.isMe ? meAvatar : currentContact.avatar;
     
-    let avatarHtml = `<div class="avatar" onclick="openProfile()" style="background:#4a90e2">${avaUrl ? `<img src="${avaUrl}">` : name.slice(0,2)}</div>`;
+    let avatarHtml = `<div class="avatar" onclick="${msg.isMe ? '' : 'openProfile()'}" style="background:#4a90e2">${avaUrl ? `<img src="${avaUrl}">` : name.slice(0,2)}</div>`;
     let bodyHtml = '';
 
-    if (msg.type === 'text') {
-      bodyHtml = `<div class="bubble">${msg.content}</div>`;
-    } else if (msg.type === 'sticker') {
-      bodyHtml = `<div class="bubble sticker"><div class="emoji">${msg.content}</div></div>`;
-    } else if (msg.type === 'image') {
-      bodyHtml = `<div class="bubble" style="padding:0;background:transparent;"><img src="${msg.content}" style="max-width:150px;border-radius:6px;"></div>`;
-    } else if (msg.type === 'voice') {
-      bodyHtml = `<div class="bubble">🎤 ${msg.content}″</div>`;
-    } else if (msg.type === 'call') {
-      const icon = msg.callType === 'video' ? '📹' : '📞';
-      bodyHtml = `<div class="card call-card"><span class="icon">${icon}</span> 通话时长 ${msg.duration}</div>`;
-    } else if (msg.type === 'transfer') {
-      const title = msg.isRefunded ? '已退还' : '转账给你';
-      bodyHtml = `<div class="card transfer ${msg.isRefunded ? 'refunded' : ''}" onclick="openTransfer('${msg.id}')">
-        <div class="card-icon">💰</div>
-        <div class="card-info"><div class="card-title">¥${msg.amount}</div><div class="card-sub">${title}</div></div>
-      </div>`;
-    } else if (msg.type === 'redpacket') {
-      const title = msg.isOpened ? '已领取' : '领取红包';
-      bodyHtml = `<div class="card redpacket ${msg.isOpened ? 'opened' : ''}" onclick="openRedpacket('${msg.id}')">
-        <div class="card-icon">🧧</div>
-        <div class="card-info"><div class="card-title">恭喜发财，大吉大利</div><div class="card-sub">${title}</div></div>
-      </div>`;
-    } else if (msg.type === 'namecard') {
-      bodyHtml = `<div class="card name-card">
-        <div class="name-card-top">
-          <div class="avatar" style="background:#4a90e2">${msg.cardName.slice(0,2)}</div>
-          <div class="name-card-info">
-            <div class="title">${msg.cardName}</div>
-            <div class="sub">微信号: wxid_${msg.cardName.length}82</div>
-          </div>
-        </div>
-        <div class="name-card-bottom">个人名片</div>
-      </div>`;
+    if (msg.type === 'text') bodyHtml = `<div class="bubble">${msg.content}</div>`;
+    else if (msg.type === 'voice') {
+      bodyHtml = `<div class="bubble"><div class="voice-bubble" onclick="document.getElementById('vtext-${msg.id}').style.display='block'"><span class="icon">▶〣</span> <span>${msg.content}″</span></div><div class="voice-text" id="vtext-${msg.id}">${msg.content}秒的语音...</div></div>`;
     }
+    else if (msg.type === 'sticker') bodyHtml = `<div class="bubble sticker"><div class="emoji">${msg.content}</div></div>`;
+    else if (msg.type === 'image') bodyHtml = `<div class="bubble" style="padding:0;background:transparent;"><img src="${msg.content}" style="max-width:150px;border-radius:6px;"></div>`;
+    else if (msg.type === 'call') {
+      const icon = msg.callType === 'video' ? '▢◁' : 'ᯅ';
+      bodyHtml = `<div class="card call-card"><span class="icon" style="font-size:18px;">${icon}</span> ${msg.callStatus} ${msg.duration}</div>`;
+    }
+    else if (msg.type === 'transfer') bodyHtml = `<div class="card transfer" onclick="openTransfer('${msg.id}')"><div class="card-icon">💰</div><div class="card-info"><div class="card-title">¥${msg.amount}</div><div class="card-sub">${msg.isRefunded ? '已退还' : '转账给你'}</div></div></div>`;
+    else if (msg.type === 'redpacket') bodyHtml = `<div class="card redpacket" onclick="openRedpacket('${msg.id}')"><div class="card-icon">🧧</div><div class="card-info"><div class="card-title">恭喜发财</div><div class="card-sub">${msg.isOpened ? '已领取' : '领取红包'}</div></div></div>`;
+    else if (msg.type === 'namecard') bodyHtml = `<div class="card name-card"><div class="name-card-top"><div class="avatar">${msg.cardName.slice(0,2)}</div><div><div class="title">${msg.cardName}</div><div class="sub">微信号: wxid_123</div></div></div><div class="name-card-bottom">个人名片</div></div>`;
 
     el.innerHTML = avatarHtml + `<div class="msg-body">${bodyHtml}</div>`;
-    bindMsgMenu(el, msg);
     chatBox.appendChild(el);
   });
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-/* ================= 聊天功能指令 ================= */
+/* ================= 聊天辅助功能 ================= */
 function sendMessage() {
   const input = document.getElementById('msgInput');
   const text = input.value.trim();
   if (!text || !currentContact) return;
   currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'text', isMe: true, content: text });
-  input.value = '';
-  renderMessages();
+  input.value = ''; renderMessages();
 }
-
-function addTimeCard() {
+function promptVoice() {
   if(!currentContact) return alert('请先进入聊天');
-  const timeStr = prompt('输入时间', '刚刚');
-  if(!timeStr) return;
-  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'time', content: timeStr });
-  renderMessages(); closeDrawer();
-}
-
-function addSystemCard() {
-  if(!currentContact) return alert('请先进入聊天');
-  const str = prompt('输入系统提示内容', '以下为新消息');
-  if(!str) return;
-  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'system', content: str });
-  renderMessages(); closeDrawer();
-}
-
-function addCustomTransfer() {
-  if(!currentContact) return alert('请先进入聊天');
-  const amt = prompt('输入转账金额', '100.00');
-  if(!amt) return;
-  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'transfer', isMe: false, amount: amt, isRefunded: false });
-  renderMessages(); closeDrawer();
-}
-
-function addRedpacket() {
-  if(!currentContact) return alert('请先进入聊天');
-  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'redpacket', isMe: false, isOpened: false });
-  renderMessages(); closeDrawer();
-}
-
-function addVoice() {
-  if(!currentContact) return;
-  const sec = Math.floor(Math.random()*15)+1;
-  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'voice', isMe: true, content: sec });
-  renderMessages();
-}
-
-function addImage() {
-  if(!currentContact) return;
-  const src = 'https://picsum.photos/seed/'+Date.now()+'/200/200';
-  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'image', isMe: true, content: src });
-  renderMessages(); closeDrawer();
-}
-
-function addNameCard() {
-  if(!currentContact) return alert('请先进入聊天');
-  const name = prompt('输入要发送的名片昵称', '张三');
-  if(!name) return;
-  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'namecard', isMe: false, cardName: name });
-  renderMessages(); closeDrawer();
-}
-
-function addSticker() {
-  if(!currentContact) return alert('请先进入聊天');
-  const emoji = prompt('输入要发送的Emoji表情', '😄');
-  if(!emoji) return;
-  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'sticker', isMe: true, content: emoji });
-  renderMessages(); closeDrawer();
-}
-
-function addQuickSticker() {
-  if(!currentContact) return;
-  const emoji = prompt('输入Emoji快捷发送', '😄');
-  if(!emoji) return;
-  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'sticker', isMe: true, content: emoji });
-  renderMessages();
-}
-
-/* ================= 通话相关 ================= */
-function simulateCall(type) {
-  if(!currentContact) return alert('请先进入聊天');
+  const sec = prompt('输入语音秒数', '5');
+  if(sec) { currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'voice', isMe: true, content: sec }); renderMessages(); }
   closeDrawer();
-  if(type === 'video') {
-    document.getElementById('vcAvatar').textContent = currentContact.name.slice(0,2);
-    document.getElementById('vcName').textContent = currentContact.name;
-    document.getElementById('vcStatus').textContent = '正在呼叫...';
-    document.getElementById('vcAccept').style.display = 'block';
-    document.getElementById('videoCall').classList.add('show');
-    window.vcType = 'video';
-  } else {
-    const sec = Math.floor(Math.random()*180)+10;
-    const mm = String(Math.floor(sec/60)).padStart(2,'0');
-    const ss = String(sec%60).padStart(2,'0');
-    currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'call', isMe: false, callType: 'voice', duration: `${mm}:${ss}` });
-    renderMessages();
+}
+function addTimeCard() { if(!currentContact) return; const str = prompt('输入时间', '11月11日 19:15'); if(str){ currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'time', content: str }); renderMessages(); } closeDrawer(); }
+function addSystemCard() { if(!currentContact) return; const str = prompt('系统提示', '以下为新消息'); if(str){ currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'system', content: str }); renderMessages(); } closeDrawer(); }
+function addCustomTransfer() { if(!currentContact) return; const amt = prompt('转账金额', '100.00'); if(amt){ currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'transfer', isMe: false, amount: amt }); renderMessages(); } closeDrawer(); }
+function addRedpacket() { if(!currentContact) return; currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'redpacket', isMe: false, isOpened: false }); renderMessages(); closeDrawer(); }
+function addNameCard() { if(!currentContact) return; const name = prompt('名片昵称', '张三'); if(name){ currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'namecard', isMe: false, cardName: name }); renderMessages(); } closeDrawer(); }
+function addSticker() { if(!currentContact) return; const emoji = prompt('输入Emoji', '😄'); if(emoji){ currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'sticker', isMe: true, content: emoji }); renderMessages(); } closeDrawer(); }
+function addQuickSticker() { if(!currentContact) return; const emoji = prompt('输入Emoji', '😄'); if(emoji){ currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'sticker', isMe: true, content: emoji }); renderMessages(); } }
+
+function simulateCall(type) {
+  if(!currentContact) return;
+  closeDrawer();
+  const status = prompt('通话状态 (如：对方忙线中)', '对方忙线中');
+  if(status === null) return;
+  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'call', callType: type, callStatus: status, duration: status==='对方忙线中'?'':'00:05' });
+  renderMessages();
+}
+
+function triggerMockMsg() {
+  if(!currentContact) return;
+  closeDrawer();
+  currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'text', isMe: false, content: '你有一条新消息' });
+  if (document.getElementById('view-chat').classList.contains('active')) renderMessages();
+  else {
+    bannerTargetContact = currentContact;
+    const banner = document.getElementById('msgBanner');
+    banner.textContent = `${currentContact.name}：你有一条新消息`;
+    banner.classList.add('show');
+    document.getElementById('dot-chat').style.display = 'block';
+    setTimeout(() => banner.classList.remove('show'), 3000);
   }
 }
 
-let vcStartTime = 0;
-function acceptVideo() {
-  vcStartTime = Date.now();
-  document.getElementById('vcStatus').textContent = '00:00';
-  document.getElementById('vcAccept').style.display = 'none';
-  document.getElementById('vcHangup').textContent = '挂断';
-  window.vcTimer = setInterval(() => {
-    const s = Math.floor((Date.now() - vcStartTime)/1000);
-    document.getElementById('vcStatus').textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-  }, 1000);
+function enterChatFromBanner() {
+  document.getElementById('msgBanner').classList.remove('show');
+  if (bannerTargetContact) enterChat(bannerTargetContact);
 }
 
-function hangupVideo() {
-  clearInterval(window.vcTimer);
-  document.getElementById('videoCall').classList.remove('show');
-  if (vcStartTime > 0 && currentContact) {
-    const s = Math.floor((Date.now() - vcStartTime)/1000);
-    const mm = String(Math.floor(s/60)).padStart(2,'0');
-    const ss = String(s%60).padStart(2,'0');
-    currentContact.msgs.push({ id: 'm'+msgIdCounter++, type: 'call', isMe: false, callType: 'video', duration: `${mm}:${ss}` });
-    renderMessages();
-  }
-  vcStartTime = 0;
-}
-
-/* ================= 红包、转账、详情页 ================= */
 let currentMsgId = null;
-function openRedpacket(msgId) {
-  if(!msgId) return;
-  const msg = currentContact.msgs.find(m => m.id === msgId);
-  if(!msg || msg.isOpened) return;
-  currentMsgId = msgId;
-  
-  document.getElementById('rpSenderName').textContent = currentContact.name;
-  document.getElementById('rpSenderAvatar').innerHTML = currentContact.avatar ? `<img src="${currentContact.avatar}">` : currentContact.name.slice(0,2);
-  document.getElementById('rpSenderAvatar').style.background = '#4a90e2';
-  document.getElementById('rpOpenBtn').style.display = 'block';
-  document.getElementById('rpPopup').classList.add('show');
+function openRedpacket(id) {
+  const msg = currentContact.msgs.find(m => m.id === id);
+  if(msg && !msg.isOpened) {
+    currentMsgId = id;
+    document.getElementById('rpSenderName').textContent = currentContact.name;
+    document.getElementById('rpPopup').classList.add('show');
+  }
 }
-
 function openRedpacketAction() {
   const msg = currentContact.msgs.find(m => m.id === currentMsgId);
-  if(msg) { msg.isOpened = true; renderMessages(); }
-  document.getElementById('rpPopup').classList.remove('show');
+  if(msg) msg.isOpened = true;
+  renderMessages(); closePopup();
 }
-
 function closePopup() { document.getElementById('rpPopup').classList.remove('show'); }
 
-function openTransfer(msgId) {
-  const msg = currentContact.msgs.find(m => m.id === msgId);
-  if(!msg) return;
-  if(msg.isRefunded) { alert('该转账已退还'); return; }
-  const action = prompt(`对方转账 ¥${msg.amount}\n输入 1 收款，输入 2 退还`, '1');
-  if(action === '1') alert('已收款');
-  else if(action === '2') { msg.isRefunded = true; renderMessages(); }
+function openTransfer(id) {
+  const msg = currentContact.msgs.find(m => m.id === id);
+  if(!msg || msg.isRefunded) return;
+  const act = prompt(`转账 ¥${msg.amount}\n1 收款，2 退还`, '1');
+  if(act === '1') alert('已收款');
+  else if(act === '2') { msg.isRefunded = true; renderMessages(); }
 }
 
 function openProfile() {
@@ -845,8 +723,6 @@ function openProfile() {
   document.getElementById('profName').textContent = currentContact.name;
   const ava = document.getElementById('profAvatar');
   ava.innerHTML = currentContact.avatar ? `<img src="${currentContact.avatar}">` : currentContact.name.slice(0,2);
-  ava.style.background = '#4a90e2';
-  
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.getElementById('view-profile').classList.add('active');
   document.getElementById('mainTabbar').style.display = 'none';
@@ -854,53 +730,19 @@ function openProfile() {
   document.getElementById('navTitle').textContent = '详细资料';
 }
 
-function sendMessageFromProfile() { 
-  if(currentContact) enterChat(currentContact); 
-}
-
 function updatePeerName() {
-  if(!currentContact) return alert('请先进入聊天');
+  if(!currentContact) return;
   const newName = document.getElementById('inputPeerName').value.trim();
-  if(!newName) return;
-  currentContact.name = newName;
-  document.getElementById('navTitle').textContent = newName;
-  renderMessages(); closeDrawer();
-}
-
-/* ================= 菜单与抽屉 ================= */
-let menuTargetMsg = null;
-function bindMsgMenu(el, msgData) {
-  let pressTimer = null;
-  el.addEventListener('touchstart', e => {
-    pressTimer = setTimeout(() => {
-      menuTargetMsg = msgData;
-      const menu = document.getElementById('msgMenu');
-      menu.classList.add('show');
-      const rect = el.getBoundingClientRect();
-      menu.style.left = Math.min(rect.left, window.innerWidth - 150) + 'px';
-      menu.style.top = (rect.top - 50) + 'px';
-    }, 500);
-  }, {passive:true});
-  el.addEventListener('touchend', () => clearTimeout(pressTimer));
-  el.addEventListener('touchmove', () => clearTimeout(pressTimer));
-}
-function menuAction(action) {
-  document.getElementById('msgMenu').classList.remove('show');
-  if(!menuTargetMsg || !currentContact) return;
-  if(action === 'delete') {
-    currentContact.msgs = currentContact.msgs.filter(m => m.id !== menuTargetMsg.id);
-    renderMessages();
-  } else if(action === 'copy') {
-    if(menuTargetMsg.content) navigator.clipboard.writeText(menuTargetMsg.content);
+  if(newName) {
+    currentContact.name = newName;
+    document.getElementById('navTitle').textContent = newName;
+    renderMessages(); renderChatList(); closeDrawer();
   }
 }
 
 function openDrawer() { document.getElementById('drawer').classList.add('open'); document.getElementById('mask').classList.add('open'); }
 function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('mask').classList.remove('open'); }
-function clearChat() { if(currentContact && confirm('清空当前聊天记录？')) { currentContact.msgs = []; renderMessages(); closeDrawer(); } }
-async function exportPNG() { alert('导出功能需在完整PWA环境下支持。'); }
 
-/* ================= 初始化 ================= */
 switchTab('chatlist');
 </script>
 </body>
